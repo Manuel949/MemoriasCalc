@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from docx import Document
-from docx.shared import Inches
-import matplotlib.pyplot as plt
+# from docx.shared import Inches
+# import matplotlib.pyplot as plt
 import io
 
 

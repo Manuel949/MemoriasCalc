@@ -1,3 +1,3 @@
-streamlit
-pandas
-docx
+pandas==2.2.3
+python_docx==1.1.2
+streamlit==1.39.0
