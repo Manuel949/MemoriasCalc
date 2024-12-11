@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from docx import Document
+from docxtpl import DocxTemplate
 # from docx.shared import Inches
 # import matplotlib.pyplot as plt
 import io
@@ -10,9 +11,8 @@ import io
 
 
 def main():
-    st.title("GENERADOR DE MEMORIAS DE CÁLCULO")
+    st.title("MEMORIAS DE CÁLCULO")
     st.write("Introducir la información requerida para la generación de la memoria.")
-
 
     #Introduccion de plantilla
     template_file = st.file_uploader("Cargar plantilla de memoria", type="docx")
@@ -20,54 +20,92 @@ def main():
     if template_file:
         st.success("Plantilla cargada correctamente")
         #Introducción de datos
-        st.subheader("Datos de la memoria")
+        st.markdown("##### Tipo de normas")
+        tipo_norma_sismo_col, tipo_norma_viento_col = st.columns(2)
 
-        tipo_norma_sismo=st.selectbox("Tipo de norma (Sismo)", ["NTC","CFE", "Otra"])
-        tipo_norma_viento=st.selectbox("Tipo de norma (Viento)", ["CFE", "Otra"])
+        tipo_norma_sismo=tipo_norma_sismo_col.selectbox("Tipo de norma (Sismo)", ["NTC","CFE", "Otra"])
+        tipo_norma_viento=tipo_norma_viento_col.selectbox("Tipo de norma (Viento)", ["CFE", "Otra"])
+        
+        # Inicializamos el estado en la sesión
+        if "step" not in st.session_state:
+            st.session_state.step = 1  # Empieza en el paso 1
 
+        # Función para manejar la navegación entre pasos
+        def go_to_step(step):
+            st.session_state.step = step
 
-
-        with st.form(key="form1"):
-            #STEP 1
-            #DATOS GENERALES
-            proyecto=st.text_input("Nombre del proyecto")
-            fecha=st.date_input("Fecha")
-            autor,inicialesautor=st.columns([0.7,0.3])
-            autor.text_input("Autor")
-            inicialesautor.text_input("Iniciales del autor")
-            revisor,inicialesrevisor=st.columns([0.7,0.3])
-            revisor.text_input("Revisor")
-            inicialesrevisor.text_input("Iniciales del revisor")
-            direccion=st.text_input("Dirección del proyecto")
+            st.write(f"estamos en el paso {step}")
+        
+        # Paso 1: Datos Generales
+        if st.session_state.step == 1:
+            st.header("Paso 1: Datos Generales")
+            proyecto = st.text_input("Nombre del proyecto")
+            fecha = st.date_input("Fecha")
+            autor_col, inicialesautor_col = st.columns([0.7, 0.3])
+            autor = autor_col.text_input("Autor")
+            inicialesautor = inicialesautor_col.text_input("Iniciales del autor")
+            revisor_col, inicialesrevisor_col = st.columns([0.7, 0.3])
+            revisor = revisor_col.text_input("Revisor")
+            inicialesrevisor = inicialesrevisor_col.text_input("Iniciales del revisor")
+            direccion = st.text_input("Dirección del proyecto")
             st.markdown("###### Coordenadas")
-            latitud,longitud=st.columns(2)
-            latitud.text_input("Latitud")
-            longitud.text_input("Longitud")
-            #STEP 2
-            #DESCRIPCIONES
-            st.markdown("##### Descripciones")
-            descripcionarq=st.text_area("Descripción arquitectónica")
+            latitud_col,longitud_col=st.columns(2)
+            latitud=latitud_col.text_input("Latitud")
+            longitud=longitud_col.text_input("Longitud")
+
+            if st.button("Siguiente"):
+                st.session_state.proyecto = proyecto
+                st.session_state.fecha = fecha
+                st.session_state.autor = autor
+                st.session_state.inicialesautor = inicialesautor
+                st.session_state.revisor = revisor
+                st.session_state.inicialesrevisor = inicialesrevisor
+                st.session_state.direccion = direccion
+                st.session_state.latitud = latitud
+                st.session_state.longitud = longitud
+                go_to_step(2)
+
+        # Paso 2: Descripciones
+        elif st.session_state.step == 2:
+            st.header("Paso 2: Descripciones")
+            descripcionarq = st.text_area("Descripción arquitectónica")
             st.markdown("###### Descripción de la estructura")
-            descripciongrav=st.text_area("Descripción del sistema gravitacional")
-            descripsistemlat=st.text_area("Descripción del sistema lateral")
-            descripsistemcim=st.text_area("Descripción de la cimentación")
-            #STEP 3
-            #MECANICA DE SUELOS
-            st.markdown("##### Mecánica de suelos")
-            autormecsuelos=st.text_input("Despacho que realizó estudio de mecánica de suelos")
-            docmecsuelos=st.text_input("Nombre del informe de macánica de suelos")
-            #STEP 4
-            #INFORMACION SISMICA
-            st.markdown("##### Información sísmica")
-            
-            regionsismo = None
-            nivelzonificacion = None
-            
-            if tipo_norma_sismo=="CFE":
-                normasismo=st.selectbox("Norma aplicable para análisis sísmico", ["CFE-MDOCS-2015", "CFE-MDOCS-2008"])
-                regionsismoselect=st.selectbox("Región sismica",["A","B","C","D"])
-                regionsismo=f"la región {regionsismoselect}"
-                nivelzonificacion="la República Mexicana"
+            descripciongrav = st.text_area("Descripción del sistema gravitacional")
+            descripsistemlat = st.text_area("Descripción del sistema lateral")
+            descripsistemcim = st.text_area("Descripción de la cimentación")
+
+            if st.button("Paso 1"):
+                go_to_step(1)
+            elif st.button("Paso 3"):
+                st.session_state.descripcionarq = descripcionarq
+                st.session_state.descripciongrav = descripciongrav
+                st.session_state.descripsistemlat = descripsistemlat
+                st.session_state.descripsistemcim = descripsistemcim
+                go_to_step(3)
+
+        # Paso 3: Mecánica de Suelos
+        elif st.session_state.step == 3:
+            st.header("Paso 3: Mecánica de Suelos")
+            autormecsuelos = st.text_input("Despacho que realizó estudio de mecánica de suelos")
+            docmecsuelos = st.text_input("Nombre del informe de mecánica de suelos")
+
+            if st.button("Paso 2"):
+                go_to_step(2)
+            elif st.button("Paso 4"):
+                st.session_state.autormecsuelos = autormecsuelos
+                st.session_state.docmecsuelos = docmecsuelos
+                go_to_step(4)
+
+        # Paso 4: Información Sísmica
+        elif st.session_state.step == 4:
+            st.header("Paso 4: Información Sísmica")
+            #tipo_norma_sismo = st.selectbox("Tipo de norma (Sismo)", ["NTC", "CFE", "Otra"])
+
+            if tipo_norma_sismo == "CFE":
+                normasismo = st.selectbox("Norma aplicable para análisis sísmico", ["CFE-MDOCS-2015", "CFE-MDOCS-2008"])
+                regionsismoselect = st.selectbox("Región sísmica", ["A", "B", "C", "D"])
+                regionsismo = f"la región {regionsismoselect}"
+                nivelzonificacion = "la República Mexicana"
                 gruposismoselect=st.selectbox("Grupo (Sismo)",["A+","A","B"])
                 gruposismo=f"Grupo {gruposismoselect}"
                 if gruposismoselect=="A+":
@@ -77,23 +115,17 @@ def main():
                 else:
                     descripgruposismo="Estructuras en las que se requiere un grado de seguridad convencional. Construcciones cuya falla estructural ocasionaría la pérdida de un número reducido de vidas, pérdidas económicas moderadas o pondría en peligro otras construcciones de este grupo y/o daños a las del Grupo A+ y A moderados"
                 programasismo="PRODISIS"
-            
-
-
-            elif tipo_norma_sismo=="Otra":
-                normasismo=st.text_input("Indicar norma")
-                regionsismoselect=st.text_input("Región sismica")
-                regionsismo=f"la región {regionsismoselect}"
-                nivelzonificacion=st.text_input("Entidad (ciudad y/o pais)")
+            elif tipo_norma_sismo == "Otra":
+                normasismo = st.text_input("Indicar norma")
+                regionsismoselect = st.text_input("Región sísmica")
+                regionsismo = f"la región {regionsismoselect}"
+                nivelzonificacion = st.text_input("Entidad (ciudad y/o país)")
                 gruposismo=st.text_input("Indicar Grupo")
-                
-
-
-            elif tipo_norma_sismo=="NTC":
-                normasismo=st.selectbox("Norma aplicable para análisis sísmico", ["NTC-Sismo-2004", "NTC-Sismo-2017", "NTC-Sismo-2020", "NTC-Sismo-2023"])
-                regionsismoselect=st.selectbox("Zona sismica",["I","II","III"])
-                regionsismo=f"la zona {regionsismoselect}"
-                nivelzonificacion="la Ciudad de México"
+            elif tipo_norma_sismo == "NTC":
+                normasismo = st.selectbox("Norma aplicable para análisis sísmico", ["NTC-Sismo-2004", "NTC-Sismo-2017", "NTC-Sismo-2020", "NTC-Sismo-2023"])
+                regionsismoselect = st.selectbox("Zona sísmica", ["I", "II", "III"])
+                regionsismo = f"la zona {regionsismoselect}"
+                nivelzonificacion = "la Ciudad de México"
                 gruposismoselect=st.selectbox("Grupo (Sismo)",["A","B"])
                 gruposismo=f"Grupo {gruposismoselect}"
                 if gruposismoselect=="A":
@@ -101,20 +133,32 @@ def main():
                 else:
                     descripgruposismo="Edificaciones comunes destinadas a viviendas, oficinas y locales comerciales, hoteles y construcciones comerciales e industriales no incluidas en el Grupo A"
                 programasismo="SASID"
-
             else:
-                normasismo = None
-                st.warning("No se ha indicado norma aplicable")
-            
+                normasismo, regionsismo, nivelzonificacion = None, None, None
+
             metodosismo=st.text_area("Descripción del método sismico aplicado")
             ductilidad=st.selectbox("Ductilidad",["Q=1", "Q=1.25", "Q=2","Q=3","Q=4"])
             driftpclim=st.text_input("Distorsión límite para prevención de colapso")
             driftservlim=st.text_input("Distorsión límite para servicio")
 
-            #STEP 5
-            #INFORMACION VIENTO
-            st.markdown("##### Información de viento")
+            if st.button("Paso 3"):
+                go_to_step(3)
+            elif st.button("Paso 5"):
+                st.session_state.normasismo = normasismo
+                st.session_state.regionsismo = regionsismo
+                st.session_state.nivelzonificacion = nivelzonificacion
+                st.session_state.gruposismo = gruposismo
+                st.session_state.descripgruposismo = descripgruposismo
+                st.session_state.programasismo = programasismo
+                st.session_state.metodosismo = metodosismo
+                st.session_state.ductilidad = ductilidad
+                st.session_state.driftpclim = driftpclim
+                st.session_state.driftservlim = driftservlim
+                go_to_step(5)
 
+        # Paso 5: Informacion de viento
+        elif st.session_state.step == 5:
+            st.header("Paso 5: Información de viento")
             if tipo_norma_viento=="CFE":
                 normaviento=st.selectbox("Norma aplicable para análisis por viento", ["CFE-MDOCV-2020", "CFE-MDOCV-2008"])
                 grupovientoselect=st.selectbox("Grupo (Viento)",["A","B","C"])
@@ -124,10 +168,10 @@ def main():
                 if categoriarug=="Categoría 1":
                     alturagrad="245"
                     exponenteviento="0.099"
-                elif categoriarug=="Cateroría 2":
+                elif categoriarug=="Categoría 2":
                     alturagrad="315"
                     exponenteviento="0.128"
-                elif categoriarug=="Catrgoría 3":
+                elif categoriarug=="Categoría 3":
                     alturagrad="390"
                     exponenteviento="0.156"
                 else:
@@ -146,11 +190,22 @@ def main():
                 facttopoviento=st.text_input("Factor de topografía")
                 tipotopoviento=st.text_input("Tipo de terreno")
 
+            if st.button("Paso 4"):
+                go_to_step(4)
+            elif st.button("Paso 6"):
+                st.session_state.normaviento = normaviento
+                st.session_state.grupoviento = grupoviento
+                st.session_state.tipoviento = tipoviento
+                st.session_state.categoriarug = categoriarug
+                st.session_state.alturagrad = alturagrad
+                st.session_state.exponenteviento = exponenteviento
+                st.session_state.facttopoviento = facttopoviento
+                st.session_state.tipotopoviento = tipotopoviento
+                go_to_step(6)
 
-            #STEP 6
-            #SOFTWARE UTILIZADO
-            st.markdown("##### Software utilizado")
-
+        # Paso 6: Software Utilizado
+        elif st.session_state.step == 6:
+            st.header("Paso 6: Software Utilizado")
             softwares=st.multiselect("Selecciona los software utilizados", ["ETABS", "SAP2000", "ROBOT", "SAFE", "EXCEL", "RAM Connection", "IDEA Statica Connection"])
             software1=softwares[0] if len(softwares)>0 else None
             software2=softwares[1] if len(softwares)>1 else None
@@ -238,73 +293,266 @@ def main():
             else:
                 descripsoft7=None
             
-            #st.write(f"Software 1: {software1} {descripsoft1}")
-            #st.write(f"Software 2: {software2} {descripsoft2}")
-            #st.write(f"Software 3: {software3} {descripsoft3}")
-            #st.write(f"Software 4: {software4} {descripsoft4}")
-            #st.write(f"Software 5: {software5} {descripsoft5}")
-            #st.write(f"Software 6: {software6} {descripsoft6}")
-            #st.write(f"Software 7: {software7} {descripsoft7}")
 
-            #STEP 7
-            #CONFIGURACION MODELADO
-            st.markdown("##### Otras consideraciones de Modelado")
+            if st.button("Paso 5"):
+                go_to_step(5)
+            elif st.button("Paso 7"):
+                st.session_state.software1 = software1
+                st.session_state.software2 = software2
+                st.session_state.software3 = software3
+                st.session_state.software4 = software4
+                st.session_state.software5 = software5
+                st.session_state.software6 = software6
+                st.session_state.software7 = software7
+
+                st.session_state.descripsoft1 = descripsoft1
+                st.session_state.descripsoft2 = descripsoft2
+                st.session_state.descripsoft3 = descripsoft3
+                st.session_state.descripsoft4 = descripsoft4
+                st.session_state.descripsoft5 = descripsoft5
+                st.session_state.descripsoft6 = descripsoft6
+                st.session_state.descripsoft7 = descripsoft7
+                go_to_step(7)
+
+        # Paso 7: Configuracion de modelado
+        elif st.session_state.step == 7:
+            st.header("Paso 7: Consideraciones de Modelado")
             tipolosa=st.selectbox("Sistema de piso modelado como:", ["membrana", "shell"])
             diafragma=st.selectbox("Tipo de driafragma", ["rígido","semirrígido"])
-           
+            
             crackcolumn=st.slider("Factor de agrietamiento en columnas",min_value=0.0,max_value=1.0,value=0.7,step=0.05)
             crackbeam=st.slider("Factor de agrietamiento en trabes",min_value=0.0,max_value=1.0,value=0.5,step=0.05)
             crackwall1=st.slider("Factor de agrietamiento en muros (en el plano)",min_value=0.0,max_value=1.0,value=0.5,step=0.05)
             crackwall2=st.slider("Factor de agrietamiento en muros (fuera del plano)",min_value=0.0,max_value=1.0,value=0.25,step=0.05)
             crackcoupbeam=st.slider("Factor de agrietamiento en trabes de acople",min_value=0.0,max_value=1.0,value=0.3,step=0.05)
             crackslab=st.slider("Factor de agrietamiento en losas",min_value=0.0,max_value=1.0,value=0.25,step=0.05)
-            
+                
             rigidpanel=st.slider("Rigidez efectiva del panel (%)",min_value=0,max_value=100,value=50,step=10)
 
             amortiguamiento=st.slider("Amortiguamiento (%)",min_value=0,max_value=50,value=5,step=1)
 
-            #STEP 8
-            #CORTANTE BASAL
-            st.markdown("##### Cortante Basal")
+            if st.button("Paso 6"):
+                go_to_step(6)
+            elif st.button("Paso 8"):
+                st.session_state.tipolosa = tipolosa
+                st.session_state.diafragma = diafragma
+                st.session_state.crackcolumn = crackcolumn
+                st.session_state.crackbeam = crackbeam
+                st.session_state.crackwall1 = crackwall1
+                st.session_state.crackwall2 = crackwall2
+                st.session_state.crackcoupbeam = crackcoupbeam
+                st.session_state.crackslab = crackslab
+                st.session_state.rigidpanel = rigidpanel
+                st.session_state.amortiguamiento = amortiguamiento
+                go_to_step(8)
+
+        # Paso 8: Cortante basal
+        elif st.session_state.step == 8:
+            st.header("Paso 8: Cortante Basal")
             askrevcortantebasal=st.selectbox("¿Fue necesario incrementar fuerzas sísmicas para cumplir con cortante basal mínimo?", ["No", "Si"])
             if askrevcortantebasal=="Si":
                 revcortantebasal="De acuerdo con el cálculo realizado, es necesario afectar las ordenadas espectrales para alcanzar el cortante basal mínimo. Cabe aclarar que dichos factores fueron tomados en cuenta para reportar los desplazamientos mostrados en la sección anterior"
             else:
                 revcortantebasal=None
+
+            if st.button("Paso 7"):
+                go_to_step(7)
+            elif st.button("Paso 9"):
+                st.session_state.revcortantebasal = revcortantebasal
+                go_to_step(9)
+
+        # Paso 9: Resumen
+        elif st.session_state.step == 9:
+            st.header("Paso 9: Resumen")
+
+            #st.write("### Datos generales")
+            proyecto=st.session_state.get('proyecto')
+            fecha=st.session_state.get('fecha')
+            autor=st.session_state.get('autor')
+            inicialesautor=st.session_state.get('inicialesautor')
+            revisor=st.session_state.get('revisor')
+            inicialesrevisor=st.session_state.get('inicialesrevisor')
+            direccion=st.session_state.get('direccion')
+            latitud=st.session_state.get('latitud')
+            longitud=st.session_state.get('longitud')
+
+            #st.write("### Descripciones")
+            descripcionarq=st.session_state.get('descripcionarq')
+            descripciongrav=st.session_state.get('descripciongrav')
+            descripsistemlat=st.session_state.get('descripsistemlat')
+            descripsistemcim=st.session_state.get('descripsistemcim')
             
-            #FIN DE FORMULARIO
+            #st.write("### Mecánica de suelos")
+            autormecsuelos=st.session_state.get('autormecsuelos')
+            docmecsuelos=st.session_state.get('docmecsuelos')
 
+            #st.write("### Información sismica")
+            normasismo=st.session_state.get('normasismo')
+            regionsismo=st.session_state.get('regionsismo')
+            nivelzonificacion=st.session_state.get('nivelzonificacion')
+            gruposismo=st.session_state.get('gruposismo')
+            descripgruposismo=st.session_state.get('descripgruposismo')
+            programasismo=st.session_state.get('programasismo')
+            metodosismo=st.session_state.get('metodosismo')
+            ductilidad=st.session_state.get('ductilidad')
+            driftpclim=st.session_state.get('driftpclim')
+            driftservlim=st.session_state.get('driftservlim')
 
+            #st.write("### Información viento")
+            normaviento=st.session_state.get('normaviento')
+            grupoviento=st.session_state.get('grupoviento')
+            tipoviento=st.session_state.get('tipoviento')
+            categoriarug=st.session_state.get('categoriarug')
+            alturagrad=st.session_state.get('alturagrad')
+            exponenteviento=st.session_state.get('exponenteviento')
+            facttopoviento=st.session_state.get('facttopoviento')
+            tipotopoviento=st.session_state.get('tipotopoviento')
 
-            submit_button=st.form_submit_button("Aplicar")
-            if submit_button:
-                st.write(proyecto)
-                st.write(fecha)
-                st.write(autor)
-                st.write(inicialesautor)
-                st.write(revisor)
-                st.write(inicialesrevisor)
-                st.write(direccion)
-                st.write(latitud)
-                st.write(longitud)
-                st.write(descripcionarq)
-                st.write(descripciongrav)
-                st.write(descripsistemlat)
-                st.write(descripsistemcim)
-                st.write(autormecsuelos)
-                st.write(docmecsuelos)
-                st.write(normasismo)
-                st.write(regionsismo)
-                st.write(nivelzonificacion)
-                st.write(gruposismo)
-                st.write(descripgruposismo)
-                st.write(metodosismo)
-                st.write(programasismo)
-            else:
-                st.info("Aun no se ejecuta")
+            #st.write("### Software")
+            software1=st.session_state.get('software1')
+            software2=st.session_state.get('software2')
+            software3=st.session_state.get('software3')
+            software4=st.session_state.get('software4')
+            software5=st.session_state.get('software5')
+            software6=st.session_state.get('software6')
+            software7=st.session_state.get('software7')
+
+            descripsoft1=st.session_state.get('descripsoft1')
+            descripsoft2=st.session_state.get('descripsoft2')
+            descripsoft3=st.session_state.get('descripsoft3')
+            descripsoft4=st.session_state.get('descripsoft4')
+            descripsoft5=st.session_state.get('descripsoft5')
+            descripsoft6=st.session_state.get('descripsoft6')
+            descripsoft7=st.session_state.get('descripsoft7')
+
+            #st.write("### Modelado")
+            tipolosa=st.session_state.get('tipolosa')
+            diafragma=st.session_state.get('diafragma')
+            crackcolumn=st.session_state.get('crackcolumn')
+            crackbeam=st.session_state.get('crackbeam')
+            crackwall1=st.session_state.get('crackwall1')
+            crackwall2=st.session_state.get('crackwall2')
+            crackcoupbeam=st.session_state.get('crackcoupbeam')
+            crackslab=st.session_state.get('crackslab')
+            rigidpanel=st.session_state.get('rigidpanel')
+            amortiguamiento=st.session_state.get('amortiguamiento')
+
+            #st.write("### Cortante basal")
+            revcortantebasal=st.session_state.get('revcortantebasal')
+
+            st.write("### Datos generales")
+            st.write(proyecto)
+            st.write(fecha)
+            st.write(autor)
+            st.write(inicialesautor)
+            st.write(revisor)
+            st.write(inicialesrevisor)
+            st.write(direccion)
+            st.write(latitud)
+            st.write(longitud)
+
+            st.write("### Descripciones")
+            st.write(descripcionarq)
+            st.write(descripciongrav)
+            st.write(descripsistemlat)
+            st.write(descripsistemcim)
+
+            st.write("### Mecánica de suelos")
+            st.write(autormecsuelos)
+            st.write(docmecsuelos)
+
+            st.write("### Información sismica")
+            st.write(normasismo)
+            st.write(regionsismo)
+            st.write(nivelzonificacion)
+            st.write(gruposismo)
+            st.write(descripgruposismo)
+            st.write(programasismo)
+            st.write(metodosismo)
+            st.write(ductilidad)
+            st.write(driftpclim)
+            st.write(driftservlim)
+
+            st.write("### Información viento")
+            st.write(normaviento)
+            st.write(grupoviento)
+            st.write(tipoviento)
+            st.write(categoriarug)
+            st.write(alturagrad)
+            st.write(exponenteviento)
+            st.write(facttopoviento)
+            st.write(tipotopoviento)
+
+            st.write("### Software")
+            st.write(software1)
+            st.write(software2)
+            st.write(software3)
+            st.write(software4)
+            st.write(software5)
+            st.write(software6)
+            st.write(software7)
+            st.write(descripsoft1)
+            st.write(descripsoft2)
+            st.write(descripsoft3)
+            st.write(descripsoft4)
+            st.write(descripsoft5)
+            st.write(descripsoft6)
+            st.write(descripsoft7)
+
+            st.write("### Modelado")
+            st.write(tipolosa)
+            st.write(diafragma)
+            st.write(crackcolumn)
+            st.write(crackbeam)
+            st.write(crackwall1)
+            st.write(crackwall2)
+            st.write(crackcoupbeam)
+            st.write(crackslab)
+            st.write(rigidpanel)
+            st.write(amortiguamiento)
+
+            st.write("### Cortante basal")
+            st.write(revcortantebasal)
+
+            ########################
+            texto_reemplazado = {'proyecto':proyecto, 'fecha':fecha, 'autor':autor, 'inicialesautor':inicialesautor, 'revisor':revisor, 'inicialesrevisor':inicialesrevisor, 
+            'direccion':direccion, 'latitud':latitud, 'longitud':longitud, 'descripcionarq':descripcionarq, 'descripciongrav':descripciongrav, 'descripsistemlat':descripsistemlat,
+            'descripsistemcim':descripsistemcim, 'autormecsuelos':autormecsuelos, 'docmecsuelos':docmecsuelos, 'normasismo':normasismo, 'regionsismo':regionsismo,
+            'nivelzonificacion':nivelzonificacion, 'gruposismo':gruposismo, 'descripgruposismo':descripgruposismo, 'programasismo':programasismo, 'metodosismo':metodosismo,
+            'ductilidad':ductilidad, 'driftpclim':driftpclim, 'driftservlim':driftservlim, 'normaviento':normaviento, 'grupoviento':grupoviento, 'tipoviento':tipoviento,
+            'categoriarug':categoriarug, 'alturagrad':alturagrad, 'exponenteviento':exponenteviento, 'facttopoviento':facttopoviento, 'tipotopoviento':tipotopoviento,
+            'software1':software1, 'software2':software2, 'software3':software3, 'software4':software4, 'software5':software5, 'software6':software6, 'software7':software7,
+            'descripsoft1':descripsoft1, 'descripsoft2':descripsoft2, 'descripsoft3':descripsoft3, 'descripsoft4':descripsoft4, 'descripsoft5':descripsoft5,
+            'descripsoft6':descripsoft6, 'descripsoft7':descripsoft7, 'tipolosa':tipolosa, 'diafragma':diafragma, 'crackcolumn':crackcolumn, 'crackbeam':crackbeam,
+            'crackwall1':crackwall1, 'crackwall2':crackwall2, 'crackcoupbeam':crackcoupbeam, 'crackslab':crackslab, 'rigidpanel':rigidpanel, 'amortiguamiento':amortiguamiento,
+            'revcortantebasal':revcortantebasal}
+            
+            #st.write(texto_reemplazado)
+
+            ####################################REEMPLAZAR VALORES DE TEXTO###########################
+            doc=DocxTemplate(template_file)
+            doc.render(texto_reemplazado)
+            
+
+            def generar_word():
+                buffer = io.BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
+                return buffer
+
+            buffer = generar_word()
+
+            if st.button("Paso 8"):
+                go_to_step(8)
+        
+            elif st.download_button(
+                    label="Descargar memoria",
+                    data=buffer,
+                    file_name="Memoria_calculo.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"):
+                st.success("¡Proceso completado!") 
+             
                 
-
-
     else: 
         st.warning("No se ha cargado plantilla")
 
