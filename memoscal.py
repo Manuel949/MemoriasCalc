@@ -5,7 +5,8 @@ from docxtpl import DocxTemplate
 # from docx.shared import Inches
 # import matplotlib.pyplot as plt
 import io
-
+from PIL import Image
+from docx.shared import Mm
 
 
 
@@ -440,79 +441,6 @@ def main():
             #st.write("### Cortante basal")
             revcortantebasal=st.session_state.get('revcortantebasal')
 
-            st.write("### Datos generales")
-            st.write(proyecto)
-            st.write(fecha)
-            st.write(autor)
-            st.write(inicialesautor)
-            st.write(revisor)
-            st.write(inicialesrevisor)
-            st.write(direccion)
-            st.write(latitud)
-            st.write(longitud)
-
-            st.write("### Descripciones")
-            st.write(descripcionarq)
-            st.write(descripciongrav)
-            st.write(descripsistemlat)
-            st.write(descripsistemcim)
-
-            st.write("### Mecánica de suelos")
-            st.write(autormecsuelos)
-            st.write(docmecsuelos)
-
-            st.write("### Información sismica")
-            st.write(normasismo)
-            st.write(regionsismo)
-            st.write(nivelzonificacion)
-            st.write(gruposismo)
-            st.write(descripgruposismo)
-            st.write(programasismo)
-            st.write(metodosismo)
-            st.write(ductilidad)
-            st.write(driftpclim)
-            st.write(driftservlim)
-
-            st.write("### Información viento")
-            st.write(normaviento)
-            st.write(grupoviento)
-            st.write(tipoviento)
-            st.write(categoriarug)
-            st.write(alturagrad)
-            st.write(exponenteviento)
-            st.write(facttopoviento)
-            st.write(tipotopoviento)
-
-            st.write("### Software")
-            st.write(software1)
-            st.write(software2)
-            st.write(software3)
-            st.write(software4)
-            st.write(software5)
-            st.write(software6)
-            st.write(software7)
-            st.write(descripsoft1)
-            st.write(descripsoft2)
-            st.write(descripsoft3)
-            st.write(descripsoft4)
-            st.write(descripsoft5)
-            st.write(descripsoft6)
-            st.write(descripsoft7)
-
-            st.write("### Modelado")
-            st.write(tipolosa)
-            st.write(diafragma)
-            st.write(crackcolumn)
-            st.write(crackbeam)
-            st.write(crackwall1)
-            st.write(crackwall2)
-            st.write(crackcoupbeam)
-            st.write(crackslab)
-            st.write(rigidpanel)
-            st.write(amortiguamiento)
-
-            st.write("### Cortante basal")
-            st.write(revcortantebasal)
 
             ########################
             texto_reemplazado = {'proyecto':proyecto, 'fecha':fecha, 'autor':autor, 'inicialesautor':inicialesautor, 'revisor':revisor, 'inicialesrevisor':inicialesrevisor, 
@@ -526,24 +454,287 @@ def main():
             'descripsoft6':descripsoft6, 'descripsoft7':descripsoft7, 'tipolosa':tipolosa, 'diafragma':diafragma, 'crackcolumn':crackcolumn, 'crackbeam':crackbeam,
             'crackwall1':crackwall1, 'crackwall2':crackwall2, 'crackcoupbeam':crackcoupbeam, 'crackslab':crackslab, 'rigidpanel':rigidpanel, 'amortiguamiento':amortiguamiento,
             'revcortantebasal':revcortantebasal}
-            
-            #st.write(texto_reemplazado)
 
+            if st.button("Paso 8"):
+                go_to_step(8)
+            elif st.button("Paso 10"):
+                
+                go_to_step(10)
+            
+
+            st.write(texto_reemplazado)
+
+        # Paso 10: Imagenes
+        elif st.session_state.step == 10:
+            st.header("Paso 10: Imagenes")     
+
+            #Introduccion de figura 1.1 Proyecto
+            st.markdown("#### Imagen del proyecto")
+            figura1_1 = st.file_uploader("Cargar figura 1.1", type=["jpg", "jpeg", "png"])
+            tit_fig_1_1=st.text_input("Titulo de figura 1.1",value="Vista conceptual del edificio")
+            # Mostrar la imagen cargada
+            if figura1_1 and tit_fig_1_1:
+                prefig1_1 = Image.open(figura1_1)
+                st.image(prefig1_1, caption=tit_fig_1_1, use_column_width=True)
+                image_path = f"temp_{figura1_1.name}"
+                with open(image_path, "wb") as f: 
+                    f.write(figura1_1.getbuffer())
+
+                
+
+            #Introduccion de figura 1.2 Ubicacion
+            st.markdown("#### Imagen de ubicación")
+            proyecto=st.session_state.get('proyecto')
+            figura1_2 = st.file_uploader("Cargar figura 1.2", type=["jpg", "jpeg", "png"])
+            #tit_fig_1_2=st.text_input("Titulo de figura 1.2",value="Vista conceptual del edificio")
+            # Mostrar la imagen cargada
+            if figura1_2:
+                prefig1_2 = Image.open(figura1_2)
+                st.image(prefig1_2, caption=f"Ubicación de {proyecto}", use_column_width=True)
+
+            #Introduccion de figura 1.3 a figura 1.X Arquitectura
+            st.markdown("#### Imagenes de arquitectura (Plantas, elevaciones, etc.)")
+            num_fig_arq=st.slider("Num. de figuras para descripción de arquitectura",min_value=0,max_value=20,value=5,step=1)
+
+            if num_fig_arq:
+                figuras_arq = []
+                tits_fig_arq = []
+                for i in range(1, num_fig_arq + 1):
+                    figura_arq = st.file_uploader(f"Cargar figura 1.{2+i}", type=["jpg", "jpeg", "png"])
+                    tit_fig_arq = st.text_input(f"Titulo de figura 1.{2+i}", key=f"fig_arq_{i}")
+                    if figura_arq and tit_fig_arq:
+                        figuras_arq.append(figura_arq)
+                        tits_fig_arq.append(tit_fig_arq)
+
+                        # Mostrar la imagen cargada
+                        image = Image.open(figura_arq)
+                        st.image(image, caption=tit_fig_arq, use_column_width=True)
+
+            #Introduccion de figura 5.1 plano de cargas
+            st.markdown("#### Imagen de planos de cargas")
+            figura5_1 = st.file_uploader("Cargar figura 5.1", type=["jpg", "jpeg", "png"])
+            tit_fig_5_1=st.text_input("Titulo de figura 5.1",value="Planos de cargas")
+            # Mostrar la imagen cargada
+            if figura5_1 and tit_fig_5_1:
+                prefig5_1 = Image.open(figura5_1)
+                st.image(prefig5_1, caption=tit_fig_5_1, use_column_width=True)
+
+            #Introduccion de figura 5.2 regionalizacion
+            st.markdown("#### Imagen de regionalización sísmica")
+            nivelzonificacion=st.session_state.get('nivelzonificacion')
+            figura5_2 = st.file_uploader("Cargar figura 5.2", type=["jpg", "jpeg", "png"])
+            # Mostrar la imagen cargada
+            if figura5_2:
+                prefig5_2 = Image.open(figura5_2)
+                st.image(prefig5_2, caption=f"Regionalización símica de {nivelzonificacion}", use_column_width=True)
+            
+            #Introduccion de figura 5.3 espectro elastico
+            st.markdown("#### Imagen de espectro elástico")
+            figura5_3 = st.file_uploader("Cargar figura 5.3", type=["jpg", "jpeg", "png"])
+            tit_fig_5_3=st.text_input("Titulo de figura 5.3",value="Espectro elástico")
+            # Mostrar la imagen cargada
+            if figura5_3:
+                prefig5_3 = Image.open(figura5_3)
+                st.image(prefig5_3, caption=tit_fig_5_3, use_column_width=True)
+            
+            #Introduccion de figura 5.4 espectro reducido y de servicio
+            st.markdown("#### Imagen de espectro de diseño y de servicio")
+            figura5_4 = st.file_uploader("Cargar figura 5.4", type=["jpg", "jpeg", "png"])
+            tit_fig_5_4=st.text_input("Titulo de figura 5.4",value="Espectro de diseño reducido y de servicio")
+            # Mostrar la imagen cargada
+            if figura5_4:
+                prefig5_4 = Image.open(figura5_4)
+                st.image(prefig5_4, caption=tit_fig_5_4, use_column_width=True)
+
+            #Introduccion de figura 5.5 a figura 5.X viento
+            st.markdown("#### Imagenes de viento (Sugerencia: Mapa de velocidad regional)")
+            num_fig_viento=st.slider("Num. de figuras para viento",min_value=0,max_value=5,value=1,step=1)
+
+            if num_fig_viento:
+                figuras_viento = []
+                tits_fig_viento = []
+                for i in range(1, num_fig_viento + 1):
+                    figura_viento = st.file_uploader(f"Cargar figura 5.{4+i}", type=["jpg", "jpeg", "png"])
+                    tit_fig_viento = st.text_input(f"Titulo de figura 5.{4+i}", key=f"fig_viento_{i}")
+                    if figura_viento and tit_fig_viento:
+                        figuras_viento.append(figura_viento)
+                        tits_fig_viento.append(tit_fig_viento)
+
+                        # Mostrar la imagen cargada
+                        image = Image.open(figura_viento)
+                        st.image(image, caption=tit_fig_viento, use_column_width=True)
+
+            #Introduccion de figura 10.1 a figura 10.X modelo estructural
+            st.markdown("#### Imagenes de modelo estructural")
+            num_fig_modest=st.slider("Num. de figuras para modelo estructural",min_value=0,max_value=5,value=1,step=1)
+
+            if num_fig_modest:
+                figuras_modest = []
+                tits_fig_modest = []
+                for i in range(1, num_fig_modest + 1):
+                    figura_modest = st.file_uploader(f"Cargar figura 10.{i}", type=["jpg", "jpeg", "png"])
+                    tit_fig_modest = st.text_input(f"Titulo de figura 10.{i}", key=f"fig_modest_{i}")
+                    if figura_modest and tit_fig_modest:
+                        figuras_modest.append(figura_modest)
+                        tits_fig_modest.append(tit_fig_modest)
+
+                        # Mostrar la imagen cargada
+                        image = Image.open(figura_modest)
+                        st.image(image, caption=tit_fig_modest, use_column_width=True)
+
+            #Introduccion de figura 10.4 Configuracion modos de vibrar
+            st.markdown("#### Imagenes de los modos de vibrar")
+            modo1_col, modo2_col, modo3_col = st.columns(3)
+            # Modo 1
+            #modo1_col.markdown("##### Imagen del modo 1")
+            figura10_4a = modo1_col.file_uploader("Cargar figura de modo 1", type=["jpg", "jpeg", "png"])
+            tit_fig_10_4a=modo1_col.text_input("Periodo de modo 1")
+            # Modo 2
+            #modo2_col.markdown("##### Imagen del modo 2")
+            figura10_4b = modo2_col.file_uploader("Cargar figura de modo 2", type=["jpg", "jpeg", "png"])
+            tit_fig_10_4b=modo2_col.text_input("Periodo de modo 2")
+            # Modo 3
+            #modo3_col.markdown("##### Imagen del modo 3")
+            figura10_4c = modo3_col.file_uploader("Cargar figura de modo 3", type=["jpg", "jpeg", "png"])
+            tit_fig_10_4c=modo3_col.text_input("Periodo de modo 3")
+            # Mostrar la imagen cargada
+            if figura10_4a and figura10_4b and figura10_4c and tit_fig_10_4a and tit_fig_10_4b and tit_fig_10_4c:
+                prefig10_4a = Image.open(figura10_4a)
+                prefig10_4b = Image.open(figura10_4b)
+                prefig10_4c = Image.open(figura10_4c)
+                modo1_col.image(prefig10_4a, caption=f"Modo 1. T={tit_fig_10_4a} s", use_column_width=True)
+                modo2_col.image(prefig10_4b, caption=f"Modo 2. T={tit_fig_10_4b} s", use_column_width=True)
+                modo3_col.image(prefig10_4c, caption=f"Modo 3. T={tit_fig_10_4c} s", use_column_width=True)
+
+            #Introduccion de figura 10.7 a figura 10.X deflexiones verticales
+            st.markdown("#### Imagenes de deflexiones verticales")
+            num_fig_dz=st.slider("Num. de figuras para mostrar delfexiones verticales",min_value=0,max_value=20,value=5,step=1)
+
+            if num_fig_dz:
+                figuras_dz = []
+                tits_fig_dz = []
+                for i in range(1, num_fig_dz + 1):
+                    figura_dz = st.file_uploader(f"Cargar figura 10.{num_fig_modest+3+i}", type=["jpg", "jpeg", "png"])
+                    tit_fig_dz = st.text_input(f"Titulo de figura 10.{num_fig_modest+3+i}", key=f"fig_dz_{i}")
+                    if figura_dz and tit_fig_dz:
+                        figuras_dz.append(figura_dz)
+                        tits_fig_dz.append(tit_fig_dz)
+
+                        # Mostrar la imagen cargada
+                        image = Image.open(figura_dz)
+                        st.image(image, caption=tit_fig_dz, use_column_width=True)
+
+            #st.write("### Datos generales")
+            proyecto=st.session_state.get('proyecto')
+            fecha=st.session_state.get('fecha')
+            ano=fecha.year
+            mes=fecha.month
+            dia=fecha.day
+            autor=st.session_state.get('autor')
+            inicialesautor=st.session_state.get('inicialesautor')
+            revisor=st.session_state.get('revisor')
+            inicialesrevisor=st.session_state.get('inicialesrevisor')
+            direccion=st.session_state.get('direccion')
+            latitud=st.session_state.get('latitud')
+            longitud=st.session_state.get('longitud')
+
+            #st.write("### Descripciones")
+            descripcionarq=st.session_state.get('descripcionarq')
+            descripciongrav=st.session_state.get('descripciongrav')
+            descripsistemlat=st.session_state.get('descripsistemlat')
+            descripsistemcim=st.session_state.get('descripsistemcim')
+            
+            #st.write("### Mecánica de suelos")
+            autormecsuelos=st.session_state.get('autormecsuelos')
+            docmecsuelos=st.session_state.get('docmecsuelos')
+
+            #st.write("### Información sismica")
+            normasismo=st.session_state.get('normasismo')
+            regionsismo=st.session_state.get('regionsismo')
+            nivelzonificacion=st.session_state.get('nivelzonificacion')
+            gruposismo=st.session_state.get('gruposismo')
+            descripgruposismo=st.session_state.get('descripgruposismo')
+            programasismo=st.session_state.get('programasismo')
+            metodosismo=st.session_state.get('metodosismo')
+            ductilidad=st.session_state.get('ductilidad')
+            driftpclim=st.session_state.get('driftpclim')
+            driftservlim=st.session_state.get('driftservlim')
+
+            #st.write("### Información viento")
+            normaviento=st.session_state.get('normaviento')
+            grupoviento=st.session_state.get('grupoviento')
+            tipoviento=st.session_state.get('tipoviento')
+            categoriarug=st.session_state.get('categoriarug')
+            alturagrad=st.session_state.get('alturagrad')
+            exponenteviento=st.session_state.get('exponenteviento')
+            facttopoviento=st.session_state.get('facttopoviento')
+            tipotopoviento=st.session_state.get('tipotopoviento')
+
+            #st.write("### Software")
+            software1=st.session_state.get('software1')
+            software2=st.session_state.get('software2')
+            software3=st.session_state.get('software3')
+            software4=st.session_state.get('software4')
+            software5=st.session_state.get('software5')
+            software6=st.session_state.get('software6')
+            software7=st.session_state.get('software7')
+
+            descripsoft1=st.session_state.get('descripsoft1')
+            descripsoft2=st.session_state.get('descripsoft2')
+            descripsoft3=st.session_state.get('descripsoft3')
+            descripsoft4=st.session_state.get('descripsoft4')
+            descripsoft5=st.session_state.get('descripsoft5')
+            descripsoft6=st.session_state.get('descripsoft6')
+            descripsoft7=st.session_state.get('descripsoft7')
+
+            #st.write("### Modelado")
+            tipolosa=st.session_state.get('tipolosa')
+            diafragma=st.session_state.get('diafragma')
+            crackcolumn=st.session_state.get('crackcolumn')
+            crackbeam=st.session_state.get('crackbeam')
+            crackwall1=st.session_state.get('crackwall1')
+            crackwall2=st.session_state.get('crackwall2')
+            crackcoupbeam=st.session_state.get('crackcoupbeam')
+            crackslab=st.session_state.get('crackslab')
+            rigidpanel=st.session_state.get('rigidpanel')
+            amortiguamiento=st.session_state.get('amortiguamiento')
+
+            #st.write("### Cortante basal")
+            revcortantebasal=st.session_state.get('revcortantebasal')
+
+            texto_reemplazado = {'proyecto':proyecto, 'fecha':fecha, 'ano':ano, 'mes':mes, 'dia':dia, 'autor':autor, 'inicialesautor':inicialesautor, 'revisor':revisor, 
+            'inicialesrevisor':inicialesrevisor, 'direccion':direccion, 'latitud':latitud, 'longitud':longitud, 'descripcionarq':descripcionarq, 'descripciongrav':descripciongrav, 
+            'descripsistemlat':descripsistemlat, 'descripsistemcim':descripsistemcim, 'autormecsuelos':autormecsuelos, 'docmecsuelos':docmecsuelos, 'normasismo':normasismo, 
+            'regionsismo':regionsismo, 'nivelzonificacion':nivelzonificacion, 'gruposismo':gruposismo, 'descripgruposismo':descripgruposismo, 'programasismo':programasismo, 
+            'metodosismo':metodosismo, 'ductilidad':ductilidad, 'driftpclim':driftpclim, 'driftservlim':driftservlim, 'normaviento':normaviento, 'grupoviento':grupoviento, 
+            'tipoviento':tipoviento, 'categoriarug':categoriarug, 'alturagrad':alturagrad, 'exponenteviento':exponenteviento, 'facttopoviento':facttopoviento, 
+            'tipotopoviento':tipotopoviento, 'software1':software1, 'software2':software2, 'software3':software3, 'software4':software4, 'software5':software5, 'software6':software6, 
+            'software7':software7, 'descripsoft1':descripsoft1, 'descripsoft2':descripsoft2, 'descripsoft3':descripsoft3, 'descripsoft4':descripsoft4, 'descripsoft5':descripsoft5,
+            'descripsoft6':descripsoft6, 'descripsoft7':descripsoft7, 'tipolosa':tipolosa, 'diafragma':diafragma, 'crackcolumn':crackcolumn, 'crackbeam':crackbeam,
+            'crackwall1':crackwall1, 'crackwall2':crackwall2, 'crackcoupbeam':crackcoupbeam, 'crackslab':crackslab, 'rigidpanel':rigidpanel, 'amortiguamiento':amortiguamiento,
+            'revcortantebasal':revcortantebasal}
+
+            #st.write(texto_reemplazado)
+            
             ####################################REEMPLAZAR VALORES DE TEXTO###########################
             doc=DocxTemplate(template_file)
             doc.render(texto_reemplazado)
-            
+
+            for paragraph in doc.paragraphs:
+                for run in paragraph.runs:
+                    if '[Insertar figura1_1]' in run.text:
+                        run.text = run.text.replace('[Insertar figura1_1]','')
+                        run.add_picture(figura1_1, height = Mm(70))
 
             def generar_word():
                 buffer = io.BytesIO()
                 doc.save(buffer)
                 buffer.seek(0)
                 return buffer
-
             buffer = generar_word()
 
-            if st.button("Paso 8"):
-                go_to_step(8)
+            if st.button("Paso 9"):
+                go_to_step(9)
         
             elif st.download_button(
                     label="Descargar memoria",
@@ -557,5 +748,3 @@ def main():
         st.warning("No se ha cargado plantilla")
 
 main()
-
-
