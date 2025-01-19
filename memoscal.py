@@ -492,7 +492,7 @@ def main():
                 prefig1_2 = Image.open(figura1_2)
                 st.image(prefig1_2, caption=f"Ubicación de {proyecto}", use_column_width=True)
 
-            #Introduccion de figura 1.3 a figura 1.X Arquitectura
+            #Introduccion de figura 1.3 a figura 1.22 Arquitectura
             st.markdown("#### Imagenes de arquitectura (Plantas, elevaciones, etc.)")
             num_fig_arq=st.slider("Num. de figuras para descripción de arquitectura",min_value=0,max_value=20,value=5,step=1)
 
@@ -546,7 +546,7 @@ def main():
                 prefig5_4 = Image.open(figura5_4)
                 st.image(prefig5_4, caption=tit_fig_5_4, use_column_width=True)
 
-            #Introduccion de figura 5.5 a figura 5.X viento
+            #Introduccion de figura 5.5 a figura 5.9 viento
             st.markdown("#### Imagenes de viento (Sugerencia: Mapa de velocidad regional)")
             num_fig_viento=st.slider("Num. de figuras para viento",min_value=0,max_value=5,value=1,step=1)
 
@@ -564,7 +564,7 @@ def main():
                         image = Image.open(figura_viento)
                         st.image(image, caption=tit_fig_viento, use_column_width=True)
 
-            #Introduccion de figura 10.1 a figura 10.X modelo estructural
+            #Introduccion de figura 10.1 a figura 10.5 modelo estructural
             st.markdown("#### Imagenes de modelo estructural")
             num_fig_modest=st.slider("Num. de figuras para modelo estructural",min_value=0,max_value=5,value=1,step=1)
 
@@ -582,31 +582,31 @@ def main():
                         image = Image.open(figura_modest)
                         st.image(image, caption=tit_fig_modest, use_column_width=True)
 
-            #Introduccion de figura 10.4 Configuracion modos de vibrar
+            #Introduccion de figura 10.6 Configuracion modos de vibrar
             st.markdown("#### Imagenes de los modos de vibrar")
             modo1_col, modo2_col, modo3_col = st.columns(3)
             # Modo 1
             #modo1_col.markdown("##### Imagen del modo 1")
-            figura10_4a = modo1_col.file_uploader("Cargar figura de modo 1", type=["jpg", "jpeg", "png"])
-            tit_fig_10_4a=modo1_col.text_input("Periodo de modo 1")
+            figura10_6a = modo1_col.file_uploader("Cargar figura de modo 1", type=["jpg", "jpeg", "png"])
+            tit_fig_10_6a=modo1_col.text_input("Periodo de modo 1")
             # Modo 2
             #modo2_col.markdown("##### Imagen del modo 2")
-            figura10_4b = modo2_col.file_uploader("Cargar figura de modo 2", type=["jpg", "jpeg", "png"])
-            tit_fig_10_4b=modo2_col.text_input("Periodo de modo 2")
+            figura10_6b = modo2_col.file_uploader("Cargar figura de modo 2", type=["jpg", "jpeg", "png"])
+            tit_fig_10_6b=modo2_col.text_input("Periodo de modo 2")
             # Modo 3
             #modo3_col.markdown("##### Imagen del modo 3")
-            figura10_4c = modo3_col.file_uploader("Cargar figura de modo 3", type=["jpg", "jpeg", "png"])
-            tit_fig_10_4c=modo3_col.text_input("Periodo de modo 3")
+            figura10_6c = modo3_col.file_uploader("Cargar figura de modo 3", type=["jpg", "jpeg", "png"])
+            tit_fig_10_6c=modo3_col.text_input("Periodo de modo 3")
             # Mostrar la imagen cargada
-            if figura10_4a and figura10_4b and figura10_4c and tit_fig_10_4a and tit_fig_10_4b and tit_fig_10_4c:
-                prefig10_4a = Image.open(figura10_4a)
-                prefig10_4b = Image.open(figura10_4b)
-                prefig10_4c = Image.open(figura10_4c)
-                modo1_col.image(prefig10_4a, caption=f"Modo 1. T={tit_fig_10_4a} s", use_column_width=True)
-                modo2_col.image(prefig10_4b, caption=f"Modo 2. T={tit_fig_10_4b} s", use_column_width=True)
-                modo3_col.image(prefig10_4c, caption=f"Modo 3. T={tit_fig_10_4c} s", use_column_width=True)
+            if figura10_6a and figura10_6b and figura10_6c and tit_fig_10_6a and tit_fig_10_6b and tit_fig_10_6c:
+                prefig10_6a = Image.open(figura10_6a)
+                prefig10_6b = Image.open(figura10_6b)
+                prefig10_6c = Image.open(figura10_6c)
+                modo1_col.image(prefig10_6a, caption=f"Modo 1. T={tit_fig_10_6a} s", use_column_width=True)
+                modo2_col.image(prefig10_6b, caption=f"Modo 2. T={tit_fig_10_6b} s", use_column_width=True)
+                modo3_col.image(prefig10_6c, caption=f"Modo 3. T={tit_fig_10_6c} s", use_column_width=True)
 
-            #Introduccion de figura 10.7 a figura 10.X deflexiones verticales
+            #Introduccion de figura 10.9 a figura 10.28 deflexiones verticales
             st.markdown("#### Imagenes de deflexiones verticales")
             num_fig_dz=st.slider("Num. de figuras para mostrar delfexiones verticales",min_value=0,max_value=20,value=5,step=1)
 
@@ -720,11 +720,87 @@ def main():
             doc=DocxTemplate(template_file)
             doc.render(texto_reemplazado)
 
+            ####################################REEMPLAZAR IMAGENES###########################
+
+            #Introduccion de figura 1.1 Proyecto
             for paragraph in doc.paragraphs:
-                for run in paragraph.runs:
-                    if '[Insertar figura1_1]' in run.text:
-                        run.text = run.text.replace('[Insertar figura1_1]','')
-                        run.add_picture(figura1_1, height = Mm(70))
+                if '[Insertar figura1_1]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura1_1]', '')
+                    paragraph.add_run().add_picture(figura1_1, height=Mm(70))
+
+            #Introduccion de figura 1.2 Ubicacion
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura1_2]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura1_2]', '')
+                    paragraph.add_run().add_picture(figura1_2, height=Mm(70))
+
+            #for paragraph in doc.paragraphs:
+             #   if '[Insertar figura1_3]' in paragraph.text:
+              #      paragraph.text = paragraph.text.replace('[Insertar figura1_3]', '')
+               #     paragraph.add_run().add_picture(figuras_arq[0], height=Mm(70))
+
+            #Introduccion de figura 1.3 a figura 1.22 Arquitectura
+            for paragraph in doc.paragraphs:
+                for i in range(0,num_fig_arq):
+                    if f'[Insertar figura1_{i+3}' in paragraph.text:
+                        paragraph.text = paragraph.text.replace(f'[Insertar figura1_{i+3}]', '')
+                        paragraph.add_run().add_picture(figuras_arq[i], height=Mm(70))
+
+            #Introduccion de figura 5.1 plano de cargas
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura5_1]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura5_1]', '')
+                    paragraph.add_run().add_picture(figura5_1, height=Mm(70))
+
+             #Introduccion de figura 5.2 regionalizacion
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura5_2]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura5_2]', '')
+                    paragraph.add_run().add_picture(figura5_2, height=Mm(70))
+            
+            #Introduccion de figura 5.3 espectro elastico
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura5_3]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura5_3]', '')
+                    paragraph.add_run().add_picture(figura5_3, height=Mm(70))
+            
+            #Introduccion de figura 5.4 espectro reducido y de servicio
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura5_4]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura5_4]', '')
+                    paragraph.add_run().add_picture(figura5_4, height=Mm(70))
+
+            #Introduccion de figura 5.5 a figura 5.9 viento
+            for paragraph in doc.paragraphs:
+                for i in range(0,num_fig_viento):
+                    if f'[Insertar figura5_{i+5}' in paragraph.text:
+                        paragraph.text = paragraph.text.replace(f'[Insertar figura5_{i+5}]', '')
+                        paragraph.add_run().add_picture(figuras_viento[i], height=Mm(70))
+
+            #Introduccion de figura 10.1 a figura 10.5 modelo estructural
+            for paragraph in doc.paragraphs:
+                for i in range(0,num_fig_modest):
+                    if f'[Insertar figura10_{i+1}' in paragraph.text:
+                        paragraph.text = paragraph.text.replace(f'[Insertar figura10_{i+1}]', '')
+                        paragraph.add_run().add_picture(figuras_modest[i], height=Mm(70))
+
+            #Introduccion de figura 10.6 Configuracion modos de vibrar
+            for paragraph in doc.paragraphs:
+                if '[Insertar figura10_6a]' and '[Insertar figura10_6b]' and '[Insertar figura10_6c]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar figura10_6a]', '')
+                    paragraph.text = paragraph.text.replace('[Insertar figura10_6b]', '')
+                    paragraph.text = paragraph.text.replace('[Insertar figura10_6c]', '')
+                    paragraph.add_run().add_picture(figura10_6a, width=Mm(50))
+                    paragraph.add_run().add_picture(figura10_6b, width=Mm(50))
+                    paragraph.add_run().add_picture(figura10_6c, width=Mm(50))
+            
+            #Introduccion de figura 10.9 a figura 10.28 deflexiones verticales
+            for paragraph in doc.paragraphs:
+                for i in range(0,num_fig_dz):
+                    if f'[Insertar figura10_{i+9}' in paragraph.text:
+                        paragraph.text = paragraph.text.replace(f'[Insertar figura10_{i+9}]', '')
+                        paragraph.add_run().add_picture(figuras_dz[i], height=Mm(70))
+
 
             def generar_word():
                 buffer = io.BytesIO()
