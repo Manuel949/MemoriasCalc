@@ -7,6 +7,10 @@ from docxtpl import DocxTemplate
 import io
 from PIL import Image
 from docx.shared import Mm
+from docx.oxml import OxmlElement
+from docx.shared import Pt
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import RGBColor
 
 
 
@@ -476,9 +480,9 @@ def main():
             if figura1_1 and tit_fig_1_1:
                 prefig1_1 = Image.open(figura1_1)
                 st.image(prefig1_1, caption=tit_fig_1_1, use_column_width=True)
-                image_path = f"temp_{figura1_1.name}"
-                with open(image_path, "wb") as f: 
-                    f.write(figura1_1.getbuffer())
+                #image_path = f"temp_{figura1_1.name}"
+                #with open(image_path, "wb") as f: 
+                #    f.write(figura1_1.getbuffer())
 
                 
 
@@ -528,6 +532,14 @@ def main():
                 prefig5_2 = Image.open(figura5_2)
                 st.image(prefig5_2, caption=f"Regionalización símica de {nivelzonificacion}", use_column_width=True)
             
+            #Introduccion de tabla 5.3 paramtros espectro
+            st.markdown("#### Tabla de parametros para espectro")
+            tabla5_3 = st.file_uploader("Cargar imagen de tabla 5.3", type=["jpg", "jpeg", "png"])
+            # Mostrar la imagen cargada
+            if tabla5_3:
+                pretab5_3 = Image.open(tabla5_3)
+                st.image(pretab5_3, caption="Parámetros para formación de espectros de diseño", use_column_width=True)
+
             #Introduccion de figura 5.3 espectro elastico
             st.markdown("#### Imagen de espectro elástico")
             figura5_3 = st.file_uploader("Cargar figura 5.3", type=["jpg", "jpeg", "png"])
@@ -586,15 +598,16 @@ def main():
             st.markdown("#### Imagenes de los modos de vibrar")
             modo1_col, modo2_col, modo3_col = st.columns(3)
             # Modo 1
-            #modo1_col.markdown("##### Imagen del modo 1")
+            modo1_col.markdown("##### Imagen del modo 1")
+            
             figura10_6a = modo1_col.file_uploader("Cargar figura de modo 1", type=["jpg", "jpeg", "png"])
             tit_fig_10_6a=modo1_col.text_input("Periodo de modo 1")
             # Modo 2
-            #modo2_col.markdown("##### Imagen del modo 2")
+            modo2_col.markdown("##### Imagen del modo 2")
             figura10_6b = modo2_col.file_uploader("Cargar figura de modo 2", type=["jpg", "jpeg", "png"])
             tit_fig_10_6b=modo2_col.text_input("Periodo de modo 2")
             # Modo 3
-            #modo3_col.markdown("##### Imagen del modo 3")
+            modo3_col.markdown("##### Imagen del modo 3")
             figura10_6c = modo3_col.file_uploader("Cargar figura de modo 3", type=["jpg", "jpeg", "png"])
             tit_fig_10_6c=modo3_col.text_input("Periodo de modo 3")
             # Mostrar la imagen cargada
@@ -605,6 +618,14 @@ def main():
                 modo1_col.image(prefig10_6a, caption=f"Modo 1. T={tit_fig_10_6a} s", use_column_width=True)
                 modo2_col.image(prefig10_6b, caption=f"Modo 2. T={tit_fig_10_6b} s", use_column_width=True)
                 modo3_col.image(prefig10_6c, caption=f"Modo 3. T={tit_fig_10_6c} s", use_column_width=True)
+
+            #Introduccion de tabla 10-2 revision de cortante basal
+            st.markdown("#### Tabla de revisión de cortante basal mínimo")
+            tabla10_2 = st.file_uploader("Cargar imagen de tabla con revisión de cortante basal", type=["jpg", "jpeg", "png"])
+            # Mostrar la imagen cargada
+            if tabla10_2:
+                pretab10_2 = Image.open(tabla10_2)
+                st.image(pretab10_2, caption="Revisión de cortante basal", use_column_width=True)
 
             #Introduccion de figura 10.9 a figura 10.28 deflexiones verticales
             st.markdown("#### Imagenes de deflexiones verticales")
@@ -714,6 +735,35 @@ def main():
             'crackwall1':crackwall1, 'crackwall2':crackwall2, 'crackcoupbeam':crackcoupbeam, 'crackslab':crackslab, 'rigidpanel':rigidpanel, 'amortiguamiento':amortiguamiento,
             'revcortantebasal':revcortantebasal}
 
+            #st.write("### Titulos de figuras")
+
+            titulos_reemplazados1 = {'titulo_fig_1_1': tit_fig_1_1, 'titulo_fig_5_1': tit_fig_5_1, 'titulo_fig_5_3': tit_fig_5_3, 'titulo_fig_5_4': tit_fig_5_4, 
+            'modo1': tit_fig_10_6a, 'modo2': tit_fig_10_6b, 'modo3': tit_fig_10_6c}
+
+            texto_reemplazado.update(titulos_reemplazados1)
+
+            titulos_fig_arq = {}
+            for i in range(1, num_fig_arq+1):
+                titulos_fig_arq[f'titulo_fig_1_{i+2}'] = tits_fig_arq[i-1]
+
+            titulos_fig_viento = {}
+            for i in range(1, num_fig_viento+1):
+                titulos_fig_viento[f'titulo_fig_5_{i+4}'] = tits_fig_viento[i-1]
+
+            titulos_fig_modest = {}
+            for i in range(1, num_fig_modest+1):
+                titulos_fig_modest[f'titulo_fig_10_{i}'] = tits_fig_modest[i-1]
+
+            titulos_fig_dz = {}
+            for i in range(1, num_fig_dz+1):
+                titulos_fig_dz[f'titulo_fig_10_{i+8}'] = tits_fig_dz[i-1]
+
+    
+            texto_reemplazado.update(titulos_fig_arq)
+            texto_reemplazado.update(titulos_fig_viento)
+            texto_reemplazado.update(titulos_fig_modest)
+            texto_reemplazado.update(titulos_fig_dz)
+
             #st.write(texto_reemplazado)
             
             ####################################REEMPLAZAR VALORES DE TEXTO###########################
@@ -742,7 +792,7 @@ def main():
             #Introduccion de figura 1.3 a figura 1.22 Arquitectura
             for paragraph in doc.paragraphs:
                 for i in range(0,num_fig_arq):
-                    if f'[Insertar figura1_{i+3}' in paragraph.text:
+                    if f'[Insertar figura1_{i+3}]' in paragraph.text:
                         paragraph.text = paragraph.text.replace(f'[Insertar figura1_{i+3}]', '')
                         paragraph.add_run().add_picture(figuras_arq[i], height=Mm(70))
 
@@ -763,6 +813,12 @@ def main():
                 if '[Insertar figura5_3]' in paragraph.text:
                     paragraph.text = paragraph.text.replace('[Insertar figura5_3]', '')
                     paragraph.add_run().add_picture(figura5_3, height=Mm(70))
+
+            #Introduccion de tabla 5.3 parametros espectros
+            for paragraph in doc.paragraphs:
+                if '[Insertar tabla5_3]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar tabla5_3]', '')
+                    paragraph.add_run().add_picture(tabla5_3, height=Mm(40))
             
             #Introduccion de figura 5.4 espectro reducido y de servicio
             for paragraph in doc.paragraphs:
@@ -773,14 +829,20 @@ def main():
             #Introduccion de figura 5.5 a figura 5.9 viento
             for paragraph in doc.paragraphs:
                 for i in range(0,num_fig_viento):
-                    if f'[Insertar figura5_{i+5}' in paragraph.text:
+                    if f'[Insertar figura5_{i+5}]' in paragraph.text:
                         paragraph.text = paragraph.text.replace(f'[Insertar figura5_{i+5}]', '')
                         paragraph.add_run().add_picture(figuras_viento[i], height=Mm(70))
+
+            #Introduccion de tabla 10-2 Revision de cortante basal
+            for paragraph in doc.paragraphs:
+                if '[Insertar tabla10_2]' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('[Insertar tabla10_2]', '')
+                    paragraph.add_run().add_picture(tabla10_2, height=Mm(35))
 
             #Introduccion de figura 10.1 a figura 10.5 modelo estructural
             for paragraph in doc.paragraphs:
                 for i in range(0,num_fig_modest):
-                    if f'[Insertar figura10_{i+1}' in paragraph.text:
+                    if f'[Insertar figura10_{i+1}]' in paragraph.text:
                         paragraph.text = paragraph.text.replace(f'[Insertar figura10_{i+1}]', '')
                         paragraph.add_run().add_picture(figuras_modest[i], height=Mm(70))
 
@@ -797,9 +859,78 @@ def main():
             #Introduccion de figura 10.9 a figura 10.28 deflexiones verticales
             for paragraph in doc.paragraphs:
                 for i in range(0,num_fig_dz):
-                    if f'[Insertar figura10_{i+9}' in paragraph.text:
+                    if f'[Insertar figura10_{i+9}]' in paragraph.text:
                         paragraph.text = paragraph.text.replace(f'[Insertar figura10_{i+9}]', '')
                         paragraph.add_run().add_picture(figuras_dz[i], height=Mm(70))
+
+            ############## SOLICITUD DE TABLAS ########################
+            st.markdown("### Introducción de tablas")
+            opcion_tablas = st.checkbox("Agregar tablas")
+
+            if opcion_tablas:
+                #Introduccion de tabla de periodos y participacion modal
+                periodos = st.file_uploader("Cargar tabla de periodos y participación modal", type="xlsx")
+                if periodos:
+                    st.success("Tabla cargada correctamente")
+                    df_periodos = pd.read_excel(periodos, header=1)
+                    #st.write("#### Tabla completa")
+                    #st.dataframe(df_periodos)
+                    df_periodos_drop1 = df_periodos.drop(index=0).reset_index(drop=True)
+                    columnas_selec = [0,1,2,3,4,6,7,11,14]
+                    df_periodos_filtrado = df_periodos_drop1.iloc[:,columnas_selec]
+                    col_redondeo1 = [2,3,4,5,6,7,8]
+                    col_redondeo2 = [1]
+                    df_periodos_filtrado.iloc[:,col_redondeo1]=df_periodos_filtrado.iloc[:,col_redondeo1].round(3)
+                    df_periodos_filtrado.iloc[:,col_redondeo2]=df_periodos_filtrado.iloc[:,col_redondeo2].round(0).astype(int).astype(str)
+                    
+                    st.write("#### Periodos y participación modal")
+                    st.dataframe(df_periodos_filtrado)
+
+                    for paragraph in doc.paragraphs:
+                        if "[Insertar tabla periodos]" in paragraph.text:
+                            paragraph.text = paragraph.text.replace("[Insertar tabla periodos]","")
+                            tabla_periodos = doc.add_table(rows=df_periodos_filtrado.shape[0]+1,cols=df_periodos_filtrado.shape[1])
+                            tabla_periodos.style = "Table Grid"
+
+                            paragraph._element.addnext(tabla_periodos._element)
+
+                            for j, col_name in enumerate(df_periodos_filtrado.columns):
+                                tabla_periodos.cell(0,j).text = col_name
+
+                            for i in range(df_periodos_filtrado.shape[0]):
+                                for j in range(df_periodos_filtrado.shape[1]):
+                                    tabla_periodos.cell(i + 1,j).text = str(df_periodos_filtrado.iloc[i,j])
+
+                            for row in tabla_periodos.rows:
+                                for cell in row.cells:
+                                    for paragraph in cell.paragraphs:
+                                        run = paragraph.runs[0]
+                                        run.font.size = Pt(10)  # Tamaño de fuente
+                                        
+
+                            for cell in tabla_periodos.rows[0].cells:  # Primera fila (encabezados)
+                                for paragraph in cell.paragraphs:
+                                    for run in paragraph.runs:
+                                        run.bold = True  # Aplica negritas
+                                        #run.font.size = Pt(11)  # Opcional: ajustar el tamaño de fuente
+
+                            for row in tabla_periodos.rows:
+                                for cell in row.cells:
+                                    for paragraph in cell.paragraphs:
+                                        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Centrar texto
+
+                            for cell in tabla_periodos.rows[0].cells:
+                                shading = cell._element.get_or_add_tcPr()
+                                color = OxmlElement("w:shd")
+                                color.set("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}fill", "D9E2F3")
+                                shading.append(color)
+
+
+
+
+
+
+
 
 
             def generar_word():
