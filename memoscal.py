@@ -3,7 +3,6 @@ import pandas as pd
 from docx import Document
 from docxtpl import DocxTemplate
 # from docx.shared import Inches
-# import matplotlib.pyplot as plt
 import io
 from PIL import Image
 from docx.shared import Mm
@@ -12,6 +11,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import RGBColor
 import openpyxl
+#import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 
@@ -877,8 +878,8 @@ def main():
                     #st.write("#### Tabla completa")
                     #st.dataframe(df_periodos)
                     df_periodos_drop1 = df_periodos.drop(index=0).reset_index(drop=True)
-                    columnas_selec = [0,1,2,3,4,6,7,11,14]
-                    df_periodos_filtrado = df_periodos_drop1.iloc[:,columnas_selec]
+                    columnas_selec_periodos = [0,1,2,3,4,6,7,11,14]
+                    df_periodos_filtrado = df_periodos_drop1.iloc[:,columnas_selec_periodos]
                     col_redondeo1 = [2,3,4,5,6,7,8]
                     col_redondeo2 = [1]
                     df_periodos_filtrado.iloc[:,col_redondeo1]=df_periodos_filtrado.iloc[:,col_redondeo1].round(3)
@@ -927,8 +928,129 @@ def main():
                                 shading.append(color)
 
 
+                    #Introduccion de tablas de distorsiones
+                    drifts = st.file_uploader("Cargar tabla de distorsiones", type="xlsx")
+                    if drifts:
+                        st.success("Tabla cargada correctamente")
 
+                        driftcolapso= st.slider("Distorsión límite para Prevención de Colapso",min_value=0.0,max_value=0.04,value=0.015,step=0.001, format="%.3f")
+                        driftservicio= st.slider("Distorsión límite para Limitación de Daños ante Sismos Frecuentes",min_value=0.0,max_value=0.01,value=0.002,step=0.001, format="%.3f")
 
+                        df_drifts = pd.read_excel(drifts, header=1)
+
+                        df_drifts_drop1 = df_drifts.drop(index=0).reset_index(drop=True)
+                        col_selec_drifts = [0,1,4,5,9]
+                        df_drifts_filtrado1 = df_drifts_drop1.iloc[:,col_selec_drifts]
+                                        
+                        #st.write("#### Distorsiones")
+                        #st.dataframe(df_drifts_filtrado1)
+
+                        casos_drifts = df_drifts_filtrado1["Output Case"].unique().tolist()
+
+                        casos_drift_col1,casos_drift_col2  = st.columns(2)
+
+                        caso_colapso_x=casos_drift_col1.selectbox("Caso X Colapso", casos_drifts)
+                        caso_colapso_y=casos_drift_col2.selectbox("Caso Y Colapso", casos_drifts)
+
+                        caso_servicio_x=casos_drift_col1.selectbox("Caso X Servicio", casos_drifts)
+                        caso_servicio_y=casos_drift_col2.selectbox("Caso Y Servicio", casos_drifts)
+
+                        df_drifts_colapso_x_filtrado = df_drifts_filtrado1[df_drifts_filtrado1["Output Case"] == caso_colapso_x]
+                        df_drifts_colapso_y_filtrado = df_drifts_filtrado1[df_drifts_filtrado1["Output Case"] == caso_colapso_y]
+
+                        df_drifts_colapso_x = df_drifts_colapso_x_filtrado[df_drifts_colapso_x_filtrado["Direction"] == "X"]
+                        df_drifts_colapso_y = df_drifts_colapso_y_filtrado[df_drifts_colapso_y_filtrado["Direction"] == "Y"]
+
+                        df_drifts_colapso_x = df_drifts_colapso_x.reset_index(drop=True)
+                        df_drifts_colapso_y = df_drifts_colapso_y.reset_index(drop=True)
+
+                        plt.rcParams["font.family"] = "arial"
+
+                        fig_drifts_colapso, ax = plt.subplots(figsize=(6, 10))
+                        
+                        plt.plot(df_drifts_colapso_x["Drift"],
+                                df_drifts_colapso_x["Z"],
+                                color = "green", 
+                                marker = 'o',
+                                label = "X-Dir")
+                        
+                        plt.plot(df_drifts_colapso_y["Drift"],
+                                df_drifts_colapso_y["Z"],
+                                color = "blue",
+                                marker = 's',
+                                label = "Y-Dir")
+                        
+                        plt.grid(color = 'gray',
+                                linestyle = '--',
+                                linewidth = 0.5,
+                                alpha = 0.5)
+                        
+                        plt.axvline(x=driftcolapso, color="red", linestyle="--", linewidth=2, label="Límite")
+                        plt.legend(loc = 'best')
+                        plt.title("Prevención Contra Colapso", fontsize=14, fontweight="bold")
+                        plt.xlabel("Distorsión", fontweight="bold")
+                        plt.ylabel("Altura (m)", fontweight="bold")
+
+                        ################################
+
+                        df_drifts_serv_x_filtrado = df_drifts_filtrado1[df_drifts_filtrado1["Output Case"] == caso_servicio_x]
+                        df_drifts_serv_y_filtrado = df_drifts_filtrado1[df_drifts_filtrado1["Output Case"] == caso_servicio_y]
+
+                        df_drifts_serv_x = df_drifts_serv_x_filtrado[df_drifts_serv_x_filtrado["Direction"] == "X"]
+                        df_drifts_serv_y = df_drifts_serv_y_filtrado[df_drifts_serv_y_filtrado["Direction"] == "Y"]
+
+                        df_drifts_serv_x = df_drifts_serv_x.reset_index(drop=True)
+                        df_drifts_serv_y = df_drifts_serv_y.reset_index(drop=True)
+
+                        fig_drifts_serv, ax = plt.subplots(figsize=(6, 10))
+                        
+                        plt.plot(df_drifts_serv_x["Drift"],
+                                df_drifts_serv_x["Z"],
+                                color = "green", 
+                                marker = 'o',
+                                label = "X-Dir")
+                        
+                        plt.plot(df_drifts_serv_y["Drift"],
+                                df_drifts_serv_y["Z"],
+                                color = "blue",
+                                marker = 's',
+                                label = "Y-Dir")
+                        
+                        plt.grid(color = 'gray',
+                                linestyle = '--',
+                                linewidth = 0.5,
+                                alpha = 0.5)
+                        
+                        plt.axvline(x=driftservicio, color="red", linestyle="--", linewidth=2, label="Límite")
+                        plt.legend(loc = 'best')
+                        plt.title("Limitación de Daños ante Sismos Frecuentes", fontsize=14, fontweight="bold")
+                        plt.xlabel("Distorsión", fontweight="bold")
+                        plt.ylabel("Altura (m)", fontweight="bold")
+
+                        st.pyplot(fig_drifts_colapso)  
+                        st.pyplot(fig_drifts_serv)
+
+                        #Introduccion de figuras de distorsiones
+
+                        # Guardar fig_drifts_colapso en BytesIO
+                        img_bytes_colapso = io.BytesIO()
+                        fig_drifts_colapso.savefig(img_bytes_colapso, format="png", dpi=300, bbox_inches='tight')
+                        img_bytes_colapso.seek(0)  # Volver al inicio del buffer
+
+                        # Guardar fig_drifts_serv en BytesIO
+                        img_bytes_serv = io.BytesIO()
+                        fig_drifts_serv.savefig(img_bytes_serv, format="png", dpi=300, bbox_inches='tight')
+                        img_bytes_serv.seek(0)  # Volver al inicio del buffer
+
+                        for paragraph in doc.paragraphs:
+                            if '[Insertar figura drifts colapso]' in paragraph.text:
+                                paragraph.text = paragraph.text.replace('[Insertar figura drifts colapso]', '')
+                                paragraph.add_run().add_picture(img_bytes_colapso, height=Mm(150))
+
+                        for paragraph in doc.paragraphs:
+                            if '[Insertar figura drifts servicio]' in paragraph.text:
+                                paragraph.text = paragraph.text.replace('[Insertar figura drifts servicio]', '')
+                                paragraph.add_run().add_picture(img_bytes_serv, height=Mm(150))
 
 
 
